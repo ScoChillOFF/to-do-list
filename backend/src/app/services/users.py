@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from uuid import uuid4
 
 from app.repositories.users import UserRepository
 from app.repositories.exceptions import ConstraintViolationError, NotFoundError, RepositoryConnectionError
@@ -79,3 +80,24 @@ class UserServiceImpl(UserService):
         ):
             raise AuthenticationError
         return user_from_repo
+    
+# TODO: Move UserServiceMock to tests after making an API
+class UserServiceMock(UserService):
+    repo: list[User] = []
+    
+    def register_and_get_user(user: UserAuth) -> User:
+        if user.username in [u.username for u in UserServiceMock.repo]:
+            raise RegistrationError
+        user.password += "hashed"
+        reg_user = User(id=str(uuid4()), username=user.username, password_hash=user.password)
+        UserServiceMock.repo.append(reg_user)
+        return reg_user
+    
+    def authenticate_and_get_user(self, user: UserAuth) -> User:
+        if user.username not in [u.username for u in UserServiceMock.repo]:
+            raise AuthenticationError
+        user_from_repo = list(filter(lambda u: u.username == user.username, UserServiceMock.repo)).pop()
+        if user_from_repo.password_hash != user.password + "hashed":
+            raise AuthenticationError
+        return user_from_repo
+        
