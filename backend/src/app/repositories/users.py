@@ -5,7 +5,7 @@ from app.schemas.user import User, UserAuth
 
 class UserRepository(ABC):
     @abstractmethod
-    def get_user_by_username(username: str) -> User:
+    def get_user_by_username(self, username: str) -> User:
         """
         Fetches a user from the repository by it`s username; throws an exception if the user does not exist.
 
@@ -22,7 +22,7 @@ class UserRepository(ABC):
         pass
     
     @abstractmethod
-    def add_user(user: UserAuth) -> User:
+    def add_user(self, user: UserAuth) -> User:
         """
         This method creates a new user in the repository and throws an exception if the username is not unique.
 
