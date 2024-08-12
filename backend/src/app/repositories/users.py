@@ -1,6 +1,14 @@
 from abc import ABC, abstractmethod
+from typing import Type
+
+import sqlalchemy as sa
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from app.schemas.user import User, UserAuth
+from .exceptions import NotFoundError, ConstraintViolationError
+from .sqlalchemy_db.engine import SessionInstance
+from .sqlalchemy_db.models.users import UserModel
 
 
 class UserRepository(ABC):
@@ -14,7 +22,6 @@ class UserRepository(ABC):
 
         Raises:
             NotFoundError: When there is no user with the given username
-            RepositoryConnectionError: When repository cannot be accessed
 
         Returns:
             User: The user object associated with the specified username.
@@ -31,9 +38,31 @@ class UserRepository(ABC):
 
         Raises:
             ConstraintViolationError: If the user's username is not unique.
-            RepositoryConnectionError: If the repository cannot be accessed.
 
         Returns:
             User: An object representing the newly created user with a unique ID.
         """
         pass
+
+
+class UserRepositorySQLAlchemy(UserRepository):
+    session_class: Type[async_sessionmaker[AsyncSession]]
+
+    async def get_user_by_username(self, username: str) -> User:
+        async with SessionInstance() as session:
+            query = sa.select(UserModel).where(UserModel.username == username)
+            user_model = session.scalar(query)
+            if not user_model:
+                raise NotFoundError
+            return user_model.to_user()
+
+    async def add_user(self, user: UserAuth) -> User:
+        async with SessionInstance() as session:
+            user_model = UserModel(username=user.username, password_hash=user.password)
+            session.add(user_model)
+            try:
+                await session.commit()
+                await session.refresh(user_model)
+                return user_model.to_user()
+            except IntegrityError:
+                raise ConstraintViolationError
