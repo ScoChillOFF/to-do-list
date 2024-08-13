@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Type
 
 import sqlalchemy as sa
 from sqlalchemy.exc import IntegrityError
@@ -7,7 +6,6 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from app.schemas.user import User, UserAuth
 from .exceptions import NotFoundError, ConstraintViolationError
-from .sqlalchemy_db.engine import SessionInstance
 from .sqlalchemy_db.models.users import UserModel
 
 
@@ -46,18 +44,21 @@ class UserRepository(ABC):
 
 
 class UserRepositorySQLAlchemy(UserRepository):
-    session_class: Type[async_sessionmaker[AsyncSession]]
+    session_maker: async_sessionmaker[AsyncSession]
+
+    def __init__(self, session_maker: async_sessionmaker[AsyncSession]):
+        self.session_maker = session_maker
 
     async def get_user_by_username(self, username: str) -> User:
-        async with SessionInstance() as session:
+        async with self.session_maker() as session:
             query = sa.select(UserModel).where(UserModel.username == username)
-            user_model = session.scalar(query)
+            user_model = await session.scalar(query)
             if not user_model:
                 raise NotFoundError
             return user_model.to_user()
 
     async def add_user(self, user: UserAuth) -> User:
-        async with SessionInstance() as session:
+        async with self.session_maker() as session:
             user_model = UserModel(username=user.username, password_hash=user.password)
             session.add(user_model)
             try:
