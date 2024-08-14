@@ -1,3 +1,4 @@
+aiosqlite==0.20.0
 alembic==1.13.2
 annotated-types==0.7.0
 anyio==4.4.0
@@ -28,6 +29,7 @@ pydantic-settings==2.4.0
 pydantic_core==2.20.1
 Pygments==2.18.0
 pytest==8.3.2
+pytest-asyncio==0.23.8
 python-dotenv==1.0.1
 python-multipart==0.0.9
 PyYAML==6.0.2
