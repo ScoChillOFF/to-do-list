@@ -1,17 +1,16 @@
 import asyncio
 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 import sqlalchemy as sa
 
 from app.config import config
 
 
 engine = create_async_engine(config.sqlalchemy_db_url)
-SessionInstance = async_sessionmaker(engine)
 
 
 async def check_conn() -> None:
-    async with SessionInstance() as session:
+    async with AsyncSession(engine) as session:
         await session.execute(sa.text("SELECT 1"))
         print("CONN SUCCESSFUL")
 

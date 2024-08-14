@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import sqlalchemy as sa
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, AsyncEngine
 
 from app.schemas.user import User, UserAuth
 from .exceptions import NotFoundError, ConstraintViolationError
@@ -46,8 +46,8 @@ class UserRepository(ABC):
 class UserRepositorySQLAlchemy(UserRepository):
     session_maker: async_sessionmaker[AsyncSession]
 
-    def __init__(self, session_maker: async_sessionmaker[AsyncSession]):
-        self.session_maker = session_maker
+    def __init__(self, engine: AsyncEngine):
+        self.session_maker = async_sessionmaker(engine)
 
     async def get_user_by_username(self, username: str) -> User:
         async with self.session_maker() as session:
