@@ -56,25 +56,25 @@ class UserServiceImpl(UserService):
         self.user_repo = user_repo
         self.password_manager = password_manager
 
-    def register_and_get_user(self, user: UserAuth) -> User:
+    async def register_and_get_user(self, user: UserAuth) -> User:
         try:
-            return self._try_to_register_and_get_user(user)
+            return await self._try_to_register_and_get_user(user)
         except ConstraintViolationError:
             raise RegistrationError
     
-    def _try_to_register_and_get_user(self, user: UserAuth) -> User:
+    async def _try_to_register_and_get_user(self, user: UserAuth) -> User:
         user.password = self.password_manager.generate_password_hash(user.password)
-        registered_user = self.user_repo.add_user(user)
+        registered_user = await self.user_repo.add_user(user)
         return registered_user
 
-    def authenticate_and_get_user(self, user: UserAuth) -> User:
+    async def authenticate_and_get_user(self, user: UserAuth) -> User:
         try:
-            return self._try_to_authenticate_and_get_user(user)
+            return await self._try_to_authenticate_and_get_user(user)
         except NotFoundError:
             raise AuthenticationError
     
-    def _try_to_authenticate_and_get_user(self, user: UserAuth) -> User:
-        user_from_repo = self.user_repo.get_user_by_username(user.username)
+    async def _try_to_authenticate_and_get_user(self, user: UserAuth) -> User:
+        user_from_repo = await self.user_repo.get_user_by_username(user.username)
         if not self.password_manager.is_password_matching_hash(
             user.password, user_from_repo.password_hash
         ):

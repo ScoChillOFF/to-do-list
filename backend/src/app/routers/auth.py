@@ -14,7 +14,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def register_user(user_to_register: UserAuth,
                         user_service: Annotated[UserService, Depends(get_user_service)]) -> UserResponse:
     try:
-        registered_user = user_service.register_and_get_user(user_to_register)
+        registered_user = await user_service.register_and_get_user(user_to_register)
         return UserResponse.from_user(registered_user)
     except RegistrationError:
         raise HTTPException(422, detail="Username already taken")
