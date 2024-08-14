@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, async_sessionmaker, AsyncSession
 import sqlalchemy as sa
@@ -7,6 +9,13 @@ from app.repositories.sqlalchemy_db.models.users import UserModel
 from app.repositories.users import UserRepository, UserRepositorySQLAlchemy
 from app.repositories.sqlalchemy_db.models.base import Base
 from app.schemas.user import User, UserAuth
+
+
+@pytest.fixture(scope="module", autouse=True)
+def teardown():
+    yield
+    if os.path.exists("test.db"):
+        os.remove("test.db")
 
 
 @pytest.fixture
