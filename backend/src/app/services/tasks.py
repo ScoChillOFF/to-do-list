@@ -39,13 +39,10 @@ class TaskService(ABC):
     def get_user_tasks(self, user: User) -> list[Task]:
         """
         Retrieves all the tasks that belong to the given user.
-        Throws an exception if the user does not exist in the repository.
+        Returns an empty list if the user does not exist in the repository.
 
         Args:
             user (User)
-
-        Raises:
-            UserNotFoundError: when the user does not exist in the repository.
 
         Returns:
             list[Task]: The user`s tasks.

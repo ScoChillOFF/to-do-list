@@ -58,9 +58,6 @@ class TaskRepository(ABC):
         Args:
             owner_id (str): The ID of the user who owns the tasks. Must exist in the repository.
 
-        Raises:
-            NotFoundError: If the user with the given owner_id does not exist in the repository.
-
         Returns:
             list[Task]: A list of Task objects owned by the user with the specified owner_id.
         """
